@@ -1,325 +1,491 @@
-﻿// Задача 1 Вариант 5
-//using System;
+﻿// Number 1
+using System;
+abstract class student
+{
 
-//class Book
+	public student(string sur, int m, int s)
+	{
+		surname = sur;
+		mark = m;
+		skipped = s;
+		if (mark == 2)
+		{
+			pos += 1;
+		}
+	}
+    public int Mark
+	{
+		get => mark;
+		set => mark = value;
+	}
+    public int Skipped
+	{
+		get => skipped;
+	}
+	public string Surname
+	{
+		get => surname;
+		set => surname = value;
+	}
+	private string surname;
+	private int mark;
+	private int skipped;
+	protected int subject;
+	protected int Subject
+	{
+		get => subject;
+		set => subject = value;
+	}
+	protected static int pos;
+    public int Pos
+    {
+        get => pos;
+        set => pos = value;
+    }
+}
+class Mstudent : student
+{
+	public Mstudent(string sur, int m, int s)
+	: base(sur, m, s)
+	{
+		Subject = 0;
+	}
+}
+class Istudent : student
+{
+	public Istudent(string sur, int m, int s)
+	: base(sur, m, s)
+	{
+		Subject = 1;
+	}
+
+}
+class Program
+{
+	static void sort(student[] x, ref int len)
+	{
+		int index = 1;
+		int nextInd = index + 1;
+
+		while (index < len)
+		{
+			if (x[index].Skipped > x[index - 1].Skipped)
+			{
+				index = nextInd;
+				nextInd++;
+			}
+			else
+			{
+				student temp = x[index - 1];
+				x[index - 1] = x[index];
+				x[index] = temp;
+				index--;
+				if (index == 0)
+				{
+					index = nextInd;
+					nextInd++;
+				}
+			}
+		}
+	}
+
+	static void Read(int n, student[] students, ref int cntBad, int subject)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			int mark, skipped;
+			string surname;
+			Console.WriteLine($"Введите фамилию {i + 1}-го студента");
+			surname = Console.ReadLine();
+			Console.WriteLine($"Введите оценку {i + 1}-го студента");
+			mark = Convert.ToInt32(Console.ReadLine());
+			Console.WriteLine($"Введите количество занятий, пропущенных {i + 1}-м студентом");
+			skipped = Convert.ToInt32(Console.ReadLine());
+
+			if (subject == 0) students[i] = new Mstudent(surname, mark, skipped);
+			else students[i] = new Istudent(surname, mark, skipped);
+
+			if (mark == 2)
+			{
+				cntBad++;
+			}
+		}
+	}
+	static void MakeBad(ref int n, ref int cntBad, student[] BadStudents, student[] students)
+	{
+		int pos = 0;
+		for (int i = 0; i < n; i++)
+		{
+			if (students[i].Mark == 2)
+			{
+				BadStudents[pos] = students[i];
+				pos++;
+			}
+		}
+		sort(BadStudents, ref cntBad);
+	}
+	static void Main(string[] args)
+	{
+		Console.WriteLine("Введите количество студентов по математике");
+		int n = Convert.ToInt32(Console.ReadLine());
+		student[] Mstudents = new student[n];
+		int cntM = 0;
+		Read(n, Mstudents, ref cntM, 0);
+
+		Console.WriteLine("Введите количество студентов по информатике");
+		int k = Convert.ToInt32(Console.ReadLine());
+		student[] Istudents = new student[k];
+		int cntI = 0;
+		Read(k, Istudents, ref cntI, 1);
+
+		student[] badMStudents = new Mstudent[cntM];
+
+		MakeBad(ref n, ref cntM, badMStudents, Mstudents);
+
+		Console.WriteLine("Студенты математики");
+		for (int i = 0; i < cntM; i++)
+		{
+			Console.WriteLine($"{badMStudents[i].Surname}, кол-во пропущенных занятий: {badMStudents[i].Skipped}");
+		}
+
+		student[] badIStudents = new Istudent[cntI];
+
+		MakeBad(ref k, ref cntI, badIStudents, Istudents);
+
+
+		Console.WriteLine("Студенты информатики");
+		for (int i = 0; i < cntI; i++)
+		{
+			Console.WriteLine($"{badIStudents[i].Surname}, кол-во пропущенных занятий: {badIStudents[i].Skipped}");
+		}
+	}
+}
+
+// Number 2
+//using System;
+//abstract class Discipline
 //{
-//    private string title;
-//    private static int ISBN_ = 0;
-//    private string autor;
-//    private int yearOfPublication;
-//    public Book(string title_, string autor_, int year_)
+//	public string discipline_;
+//	protected string discipline
+//	{
+//		get => discipline_;
+//		set => discipline_ = value;
+//	}
+//}
+//class LongJump : Discipline
+//{
+//	public LongJump()
+//	{
+//		discipline = "Long jump";
+//	}
+//}
+//class HighJump : Discipline
+//{
+//	public HighJump()
+//	{
+//		discipline = "High jump";
+//	}
+//}
+//struct Sportsman
+//{
+
+//	public Sportsman(string s, Discipline d, double r1, double r2, double r3)
+//	{
+//		surname = s;
+//		TypeOfSport = d;
+//		res1 = r1;
+//		res2 = r2;
+//		res3 = r3;
+//	}
+//	public double getMax()
+//	{
+//		if (res1 >= res2 && res1 >= res3)
+//		{
+//			return res1;
+//		}
+//		else if (res2 >= res1 && res2 >= res3)
+//		{
+//			return res2;
+//		}
+//		else
+//		{
+//			return res3;
+//		}
+//	}
+//	public string getSurname()
+//	{
+//		return surname;
+//	}
+//	public double getFirst()
+//	{
+//		return res1;
+//	}
+//	public double getSecond()
+//	{
+//		return res2;
+//	}
+//	public double getThird()
+//	{
+//		return res3;
+//	}
+//	private Discipline TypeOfSport;
+//	private string surname;
+//	private double res1, res2, res3;
+//}
+//class Program
+//{
+//	static void Read(int n, Sportsman[] sportsmen, Discipline d)
+//	{
+//		Console.WriteLine($"Введите спортсменов, учавствующих в дисциплине {d}");
+//		for (int i = 0; i < n; i++)
+//		{
+//			double res1, res2, res3;
+//			string surname;
+//			Console.WriteLine($"Введите фамилию {i + 1}-го спортсмена");
+//			surname = Console.ReadLine();
+//			Console.WriteLine($"Введите первый результат {i + 1}-го спортсмена");
+//			res1 = Convert.ToDouble(Console.ReadLine());
+//			Console.WriteLine($"Введите второй результат {i + 1}-го спортсмена");
+//			res2 = Convert.ToDouble(Console.ReadLine());
+//			Console.WriteLine($"Введите третий результат {i + 1}-го спортсмена");
+//			res3 = Convert.ToDouble(Console.ReadLine());
+//			sportsmen[i] = new Sportsman(surname, d, res1, res2, res3);
+//		}
+//	}
+//	static void Print(Sportsman[] sportsmen, int n)
+//	{
+//		for (int i = 0; i < n; i++)
+//		{
+//			Console.WriteLine($"{sportsmen[i].getSurname()}, лучший результат: {sportsmen[i].getMax()} м");
+//		}
+//	}
+//	static void Main(string[] args)
+//	{
+//		Console.WriteLine("Введите количество спортсменов, учавствующих в дисциплине Long Jump");
+//		int n = Convert.ToInt32(Console.ReadLine());
+//		Sportsman[] LongJumpers = new Sportsman[n];
+//		Read(n, LongJumpers, new LongJump());
+//		Console.WriteLine("Прыжки в длину");
+//		Print(LongJumpers, n);
+
+//		Console.WriteLine("Введите количество спортсменов, учавствующих в дисциплине High Jump");
+//		int k = Convert.ToInt32(Console.ReadLine());
+//		Sportsman[] HighJumpers = new Sportsman[k];
+//		Read(n, HighJumpers, new LongJump());
+//		Console.WriteLine("Прыжки в высоту");
+//		Print(HighJumpers, k);
+//	}
+//}
+
+// Number 3
+//using System;
+//abstract class Discipline
+//{
+//    public string discipline_;
+//    protected string discipline
 //    {
-//        title = title_;
-//        autor = autor_;
-//        yearOfPublication = year_;
-//        ISBN_++;
+//        get => discipline_;
+//        set => discipline_ = value;
 //    }
-//    public string Autor
+//}
+//abstract class Gender
+//{
+//    public string gender_;
+//    protected string gender
 //    {
-//        get => autor;
+//        get => gender_;
+//        set => gender_ = value;
 //    }
-//    public int Year
+//}
+//class Female : Gender
+//{
+//    public Female()
 //    {
-//        get => yearOfPublication;
+//        gender = "Female";
 //    }
-//    public void Print()
+//}
+//class Male : Gender
+//{
+//    public Male()
 //    {
-//        Console.WriteLine($"Название: \"{title}\", Автор: {autor}, Год издания: {yearOfPublication}, ISBN: {ISBN_}");
+//        gender = "Male";
+//    }
+//}
+//class Skiing : Discipline
+//{
+//    public Skiing()
+//    {
+//        discipline = "Skiing";
+//    }
+//}
+//abstract class Athlete
+//{
+//    public Athlete(string s, double r, Gender g, Discipline d)
+//    {
+//        surname = s;
+//        res = r;
+//        gender_ = g;
+//        TypeOfSport = d;
+//    }
+//    private Gender gender_;
+//    public Gender gender { get { return gender_; } }
+//    protected Discipline TypeOfSport;
+//    public Discipline TypeOfSport_ { get { return TypeOfSport; } }
+//    protected string surname;
+//    public string surname_ { get { return surname; } }
+//    protected double res;
+//    public double res_ { get { return res; } }
+//    public virtual void Print(int i)
+//    {
+//        Console.WriteLine($" {i + 1}  {surname}   {res} секунд ");
+//    }
+//}
+//class Skier : Athlete
+//{
+//    public Skier(string s, double r, Gender g)
+//    : base(s, r, g, new Skiing())
+//    { }
+//}
+//class Skier_m : Skier
+//{
+//    public Skier_m(string s, double r)
+//    : base(s, r, new Male())
+//    { }
+//    public override void Print (int i)
+//    {
+
+//        Console.WriteLine($" {i + 1}ый спортсмен  {surname}   {res} секунд ");
+//    }
+//}
+//class Skier_f : Skier
+//{
+//    public Skier_f(string s, double r)
+//    : base(s, r, new Female())
+//    { }
+//    public override void Print(int i)
+//    {
+
+//        Console.WriteLine($" {i + 1}ая спортсменка  {surname}   {res} секунд ");
 //    }
 //}
 //class Program
 //{
-//    static void findByAutor(Book[] books, string Autor)
+//    static void sort(Athlete[] x, ref int len)
 //    {
-//        Console.WriteLine($"Книги написаные: {Autor}:");
-//        for (int i = 0; i < books.Length; ++i)
+//        for (int i = 0; i < len - 1; i++)
 //        {
-//            if (books[i].Autor == Autor)
+//            for (int k = 0; k < len - 1 - i; k++)
 //            {
-//                books[i].Print();
+//                if (x[k].res_ > x[k + 1].res_)
+//                {
+//                    (x[k], x[k + 1]) = (x[k + 1], x[k]);
+//                }
 //            }
+//        }
+//    }
+//    static void Read(Athlete[] x, int n, Gender g)
+//    {
+//        for (int i = 0; i < n; i++)
+//        {
+//            double res;
+//            string surname;
+//            Console.WriteLine($"Введите фамилию {i + 1}-го спортсмена");
+//            surname = Console.ReadLine();
+//            Console.WriteLine($"Введите результат {i + 1}-го спортсмена");
+//            res = Convert.ToDouble(Console.ReadLine());
+//            if (g.gender_ == "Male")
+//            {
+//                x[i] = new Skier_m(surname, res);
+//            }
+//            else
+//            {
+//                x[i] = new Skier_f(surname, res);
+//            }
+//        }
+//    }
+//    static void Print(Athlete[] gr1, int n, string TableName)
+//    {
+//        Console.WriteLine($"Таблица группы {TableName}");
+//        Console.WriteLine("----------------------------------------");
+//        Console.WriteLine("|  Место  |   Фамилия   |   Результат  |");
+//        Console.WriteLine("----------------------------------------");
+//        for (int i = 0; i < n; i++)
+//        {
+//            gr1[i].Print(i);
 //        }
 //        Console.WriteLine();
 //    }
-//    static void findByCentury(Book[] books, int century)
+//    static void Merge(Athlete[] gr1, Athlete[] gr2, int n, int k, Athlete[] skiers)
 //    {
-//        Console.WriteLine($"Книги написанные в {century} веке:");
-//        for (int i = 0; i < books.Length; ++i)
+//        int pos1 = 0;
+//        int pos2 = 0;
+//        for (int i = 0; i < n + k; i++)
 //        {
-//            if (books[i].Year / 100 + 1 == century)
+//            if (pos1 == n)
 //            {
-//                books[i].Print();
+//                skiers[i] = gr2[pos2];
+//                pos2++;
+//                continue;
+//            }
+//            if (pos2 == k)
+//            {
+//                skiers[i] = gr1[pos1];
+//                pos1++;
+//                continue;
+//            }
+//            if (gr1[pos1].res_ < gr2[pos2].res_)
+//            {
+//                skiers[i] = gr1[pos1];
+//                pos1++;
+//            }
+//            else
+//            {
+//                skiers[i] = gr2[pos2];
+//                pos2++;
 //            }
 //        }
-//        Console.WriteLine();
 //    }
 //    static void Main(string[] args)
 //    {
-//        Book[] books = new Book[10];
+//        Console.WriteLine("Введите количество лыжниц в 1-ой группе");
+//        int n = Convert.ToInt32(Console.ReadLine());
+//        Skier_f[] f1 = new Skier_f[n];
+//        Read(f1, n, new Female());
 
-//        books[0] = new Book("Анна Каренина", "Лев Толстой", 1877);
-//        books[1] = new Book("Мадам Бовари", "Гюстав Флюберт", 1857);
-//        books[2] = new Book("Гарри Поттер", "Джоан Роулинг", 1997);
-//        books[3] = new Book("Медный всадник", "Пушкин А. С.", 1833);
-//        books[4] = new Book("Город в пустыне", "Петрова М. П.", 1960);
-//        books[5] = new Book("Школьные годы", "Дроздова К. Е.", 1920);
-//        books[6] = new Book("Евгений Онегин", "Пушкин А. С.", 1834);
-//        books[7] = new Book("Война и мир", "Толстой Л. Н.", 1820);
-//        books[8] = new Book("Руслан и Людмила", "Пушкин А. С.", 1818);
-//        books[9] = new Book("Пир во время чумы", "Штольц Э. Ф.", 1801);
+//        Console.WriteLine("Введите количество лыжниц в 2-ой группе");
+//        int k = Convert.ToInt32(Console.ReadLine());
+//        Skier_f[] f2 = new Skier_f[k];
+//        Read(f2, k, new Female());
 
-//        findByCentury(books, 19);
-//        findByAutor(books, "Пушкин А. С.");
+//        Console.WriteLine("Введите количество лыжников в 1-ой группе");
+//        int p = Convert.ToInt32(Console.ReadLine());
+//        Skier_m[] m1 = new Skier_m[p];
+//        Read(m1, p, new Male());
 
+//        Console.WriteLine("Введите количество лыжников в 2-ой группе");
+//        int d = Convert.ToInt32(Console.ReadLine());
+//        Skier_m[] m2 = new Skier_m[d];
+//        Read(m2, d, new Male());
+
+//        sort(f1, ref n);
+//        sort(f2, ref k);
+//        sort(m1, ref p);
+//        sort(m2, ref d);
+
+//        Print(f1, n, "Лыжницы-1");
+//        Print(f2, k, "Лыжницы-2");
+//        Print(m1, p, "Лыжники-1");
+//        Print(m2, d, "Лыжники-2");
+
+//        Athlete[] f12 = new Athlete[n + k];
+//        Merge(f1, f2, n, k, f12);
+//        Print(f12, n + k, "Лыжницы-12");
+//        Athlete[] m12 = new Athlete[p + d];
+//        Merge(m1, m2, p, d, m12);
+//        Print(m12, p + d, "Лыжники-12");
+
+//        Athlete[] all = new Athlete[n + k + p + d];
+//        Merge(f12, m12, n + k, p + d, all);
+//        Print(all, n + k + p + d, "Лыжники+Лыжницы");
 //    }
 //}
-
-
-
-// Задача 2
-using System;
-abstract class Book
-{
-    protected string title;
-    protected static int ISBN_ = 0;
-    protected string autor;
-    protected int yearOfPublication;
-    protected int cost = -1;
-
-    public abstract int CountCost();
-
-    public Book(string title_, string autor_, int year_)
-    {
-        title = title_;
-        autor = autor_;
-        yearOfPublication = year_;
-        ISBN_++;
-    }
-    public string Autor
-    {
-        get => autor;
-    }
-    public int Year
-    {
-        get => yearOfPublication;
-    }
-    public abstract void Print();
-}
-class PaperBook : Book
-{
-    private bool hardcover;
-    public PaperBook(string title_, string autor_, int year_, bool hardcover_)
-    : base(title_, autor_, year_)
-    {
-        hardcover = hardcover_;
-    }
-    public override int CountCost()
-    {
-        if (cost != -1)
-        {
-            return cost;
-        }
-        cost = 300;
-        if (hardcover)
-        {
-            cost += 500;
-        }
-        return cost;
-    }
-    public override void Print()
-    {
-        Console.Write($"Название: \"{title}\", Автор: {autor}, Год выпуска: {yearOfPublication}, ISBN: {ISBN_}, Type: AudioBook, Hardcover: ");
-        if (hardcover) Console.WriteLine("yes");
-        else Console.WriteLine("no");
-    }
-}
-class ElectronicBook : Book
-{
-    private string format;
-
-    public ElectronicBook(string title_, string autor_, int year_, string format_)
-    : base(title_, autor_, year_)
-    {
-        format = format_;
-    }
-    public override int CountCost()
-    {
-        if (cost != -1)
-        {
-            return cost;
-        }
-        cost = 100;
-        if (format == "pdf")
-        {
-            cost += 200;
-        }
-        else if (format == "fb2")
-        {
-            cost += 300;
-        }
-        else
-        {
-            cost += 150;
-        }
-
-        return cost;
-    }
-    public override void Print()
-    {
-        Console.WriteLine($"Название: \"{title}\", Автор: {autor}, Год выпуска: {yearOfPublication}, ISBN: {ISBN_}, Type: eBook, Format: {format}");
-    }
-}
-class AudioBook : Book
-{
-    private bool studioRec;
-    public AudioBook(string title_, string autor_, int year_, bool studioRec_)
-    : base(title_, autor_, year_)
-    {
-        studioRec = studioRec_;
-    }
-    public override int CountCost()
-    {
-        if (cost != -1)
-        {
-            return cost;
-        }
-
-        cost = 200;
-        if (studioRec)
-        {
-            cost += 200;
-        }
-        return cost;
-    }
-    public override void Print()
-    {
-        Console.Write($"Название: \"{title}\", Автор: {autor}, Год выпуска: {yearOfPublication}, ISBN: {ISBN_}, Type: AudioBook, Studio recording: ");
-        if (studioRec) Console.WriteLine("yes");
-        else Console.WriteLine("no");
-    }
-}
-class Program
-{
-    static void sort(Book[] x)
-    {
-        for (int i = 0; i < x.Length - 1; i++)
-        {
-            for (int k = 0; k < x.Length - 1 - i; k++)
-            {
-                if (x[k].CountCost() < x[k + 1].CountCost())
-                {
-                    (x[k], x[k + 1]) = (x[k + 1], x[k]);
-                }
-            }
-        }
-    }
-    static void findByAutor(Book[] books, string Autor)
-    {
-        Console.WriteLine($"Книга написана: {Autor}:");
-        for (int i = 0; i < books.Length; ++i)
-        {
-            if (books[i].Autor == Autor)
-            {
-                books[i].Print();
-            }
-        }
-        Console.WriteLine();
-    }
-    static void findByCentury(Book[] books, int century)
-    {
-        Console.WriteLine($"Книга написана в {century} веке:");
-        for (int i = 0; i < books.Length; ++i)
-        {
-            if (books[i].Year / 100 + 1 == century)
-
-            {
-                books[i].Print();
-            }
-        }
-        Console.WriteLine();
-    }
-    static void Main(string[] args)
-    {
-
-        Book[] pBooks = new Book[5];
-        pBooks[0] = new PaperBook("Анна Каренина", "Лев Толстой", 1877, true);
-        pBooks[1] = new PaperBook("Мадам Бовари", "Гюстав Флюберт", 1857, false);
-        pBooks[2] = new PaperBook("Гарри Поттер", "Джоан Роулинг", 1997, true);
-        pBooks[3] = new PaperBook("Медный всадник", "Пушкин А. С.", 1833, false);
-        pBooks[4] = new PaperBook("Город в пустыне", "Петрова М. П.", 1960, true);
-
-        Book[] eBooks = new Book[5];
-        eBooks[0] = new ElectronicBook("Школьные годы", "Дроздова К. Е.", 1920, "pdf");
-        eBooks[1] = new ElectronicBook("Евгений Онегин", "Пушкин А. С.", 1834, "epub");
-        eBooks[2] = new ElectronicBook("Война и мир", "Толстой Л. Н.", 1820, "fb2");
-        eBooks[3] = new ElectronicBook("Руслан и Людмила", "Пушкин А. С.", 1818, "pdf");
-        eBooks[4] = new ElectronicBook("Пир во время чумы", "Штольц Э. Ф.", 1801, "epub");
-
-        Book[] aBooks = new Book[5];
-        aBooks[0] = new AudioBook("Школьные годы", "Дроздова К. Е.", 1920, true);
-        aBooks[1] = new AudioBook("Евгений Онегин", "Пушкин А. С.", 1834, false);
-        aBooks[2] = new AudioBook("Война и мир", "Толстой Л. Н.", 1820, false);
-        aBooks[3] = new AudioBook("Руслан и Людмила", "Пушкин А. С.", 1818, true);
-        aBooks[4] = new AudioBook("Пир во время чумы", "Штольц Э. Ф.", 1801, true);
-
-        sort(eBooks);
-        sort(aBooks);
-        sort(pBooks);
-
-        Console.WriteLine("\nЭлектронные книги:");
-        for (int i = 0; i < 5; ++i)
-        {
-            eBooks[i].Print();
-        }
-
-        Console.WriteLine("\nПечатные книги:");
-        for (int i = 0; i < 5; ++i)
-        {
-            pBooks[i].Print();
-        }
-
-        Console.WriteLine("\nАудио книги:");
-        for (int i = 0; i < 5; ++i)
-        {
-            aBooks[i].Print();
-        }
-
-        Console.WriteLine("\n#######################################");
-
-        Book[] allBooks = new Book[15];
-
-        for (int i = 0; i < 15; ++i)
-        {
-            if (i < 5)
-            {
-                allBooks[i] = eBooks[i];
-            }
-            else if (i < 10)
-            {
-                allBooks[i] = pBooks[i % 5];
-            }
-            else
-            {
-                allBooks[i] = aBooks[i % 5];
-            }
-        }
-
-        sort(allBooks);
-
-        Console.WriteLine("\nВсе книги:");
-
-        for (int i = 0; i < 15; ++i)
-        {
-            allBooks[i].Print();
-        }
-
-        Console.WriteLine();
-
-        findByCentury(allBooks, 20);
-        findByAutor(allBooks, "a1");
-    }
-}
-
-
-
-
