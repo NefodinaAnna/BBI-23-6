@@ -1,491 +1,341 @@
-﻿// Number 1
-using System;
-abstract class student
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+abstract class Task
+{
+	protected string text;
+	protected string parsed_text;
+	public Task(string text)
+	{
+		this.text = text;
+		this.parsed_text = "";
+	}
+	protected abstract void ParseText();
+	protected double CountPersent(int number, int total) // все одинаковые
+	{
+		return (double)number / (double)total * 100;
+	}
+	public virtual string getText()
+	{
+		return text;
+	}
+	public virtual string getParsedText()
+	{
+		return parsed_text;
+	}
+}
+class Task_8 : Task
 {
 
-	public student(string sur, int m, int s)
+	private int string_width;
+	public Task_8(string text, int stringWidth = 50) : base(text)
 	{
-		surname = sur;
-		mark = m;
-		skipped = s;
-		if (mark == 2)
+		string_width = stringWidth;
+		ParseText();
+	}
+	public override string ToString()
+	{
+		return "Text:\n" + text + "\nParsed text:\n" + parsed_text;
+	}
+	protected override void ParseText()
+	{
+		string[] words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		// "Andrew,", "hello,", ...
+		// parsed_text = "Andrew,\nhello"
+		int curLength = 0;
+		for (int i = 0; i < words.Length;)
 		{
-			pos += 1;
+			curLength = 0;
+			while (i < words.Length && curLength + words[i].Length <= string_width)
+			{
+				curLength += words[i].Length + 1;
+				parsed_text += words[i] + " ";
+				++i;
+			}
+			while (curLength <= string_width)
+			{
+				parsed_text += " ";
+				++curLength;
+			}
+			parsed_text += "\n";
 		}
 	}
-    public int Mark
-	{
-		get => mark;
-		set => mark = value;
-	}
-    public int Skipped
-	{
-		get => skipped;
-	}
-	public string Surname
-	{
-		get => surname;
-		set => surname = value;
-	}
-	private string surname;
-	private int mark;
-	private int skipped;
-	protected int subject;
-	protected int Subject
-	{
-		get => subject;
-		set => subject = value;
-	}
-	protected static int pos;
-    public int Pos
-    {
-        get => pos;
-        set => pos = value;
-    }
 }
-class Mstudent : student
+class Task_9 : Task
 {
-	public Mstudent(string sur, int m, int s)
-	: base(sur, m, s)
+	private Dictionary<string, int> rate;
+	private Dictionary<string, string> decode;
+	private int AmountOfWordsToEncode;
+	public Task_9(string text, int AmountOfWordsToEncode = 1) : base(text)
 	{
-		Subject = 0;
+		this.AmountOfWordsToEncode = AmountOfWordsToEncode;
+		rate = new Dictionary<string, int>();
+		decode = new Dictionary<string, string>();
+		parsed_text = text;
+		ParseText();
 	}
-}
-class Istudent : student
-{
-	public Istudent(string sur, int m, int s)
-	: base(sur, m, s)
+	public override string ToString()
 	{
-		Subject = 1;
-	}
-
-}
-class Program
-{
-	static void sort(student[] x, ref int len)
-	{
-		int index = 1;
-		int nextInd = index + 1;
-
-		while (index < len)
+		string res;
+		res = "Text:\n" + text + "\nEncoded text:\n" + parsed_text + "\nTable to decode:\n";
+		foreach (var pair in decode)
 		{
-			if (x[index].Skipped > x[index - 1].Skipped)
+			res += pair.Key + " -> " + pair.Value + "\n";
+		}
+		res += "\n";
+		return res;
+	}
+	// "abc abc aaaa"
+	// ab = 2, bc = 2, aa = 2
+	// 1: 0c 0c aaaa
+	// 2: 0c 0c aaaa
+
+	private void countRate()
+	{
+		rate.Clear();
+		for (int i = 0; i + 1 < parsed_text.Length;)
+		{
+			if (!char.IsLetter(parsed_text[i]) || !char.IsLetter(parsed_text[i + 1]))
 			{
-				index = nextInd;
-				nextInd++;
+				i += 1;
+				continue;
+			}
+
+			if (rate.ContainsKey(parsed_text.Substring(i, 2)))
+			{
+				rate[parsed_text.Substring(i, 2)] += 1;
 			}
 			else
 			{
-				student temp = x[index - 1];
-				x[index - 1] = x[index];
-				x[index] = temp;
-				index--;
-				if (index == 0)
+				rate.TryAdd(parsed_text.Substring(i, 2), 1);
+			}
+
+			if (i + 2 < parsed_text.Length && parsed_text.Substring(i, 2) == parsed_text.Substring(i + 1, 2))
+			{
+				i += 2;
+			}
+			else
+			{
+				i += 1;
+			}
+		}
+	}
+	protected override void ParseText()
+	{
+		for (int i = 0; i < AmountOfWordsToEncode; ++i)
+		{
+			countRate();
+
+			string toEncode = "";
+			int rating = 0;
+			foreach (var pair in rate)
+			{
+				if (pair.Value > rating)
 				{
-					index = nextInd;
-					nextInd++;
+					toEncode = pair.Key;
+					rating = pair.Value;
+				}
+			}
+
+			if (toEncode == "") break;
+
+			decode.TryAdd(i.ToString(), toEncode);
+			parsed_text = parsed_text.Replace(toEncode, i.ToString());
+		}
+	}
+
+	public Dictionary<string, string> getDecoder()
+	{
+		return decode;
+	}
+}
+
+class Task_10 : Task
+{
+	protected Dictionary<string, string> decode;
+	public Task_10(string encodedText, Dictionary<string, string> decode) : base(encodedText)
+	{
+		parsed_text = encodedText;
+		this.decode = decode;
+		ParseText();
+	}
+	protected override void ParseText()
+	{
+		// aa -> 1
+		// pair = {"1", "aa"}
+		foreach (KeyValuePair<string, string> pair in decode)
+		{
+			parsed_text = parsed_text.Replace(pair.Key, pair.Value);
+		}
+	}
+	public override string ToString()
+	{
+		string res;
+		res = "Encoded text:\n" + text + "\nDecoded text:\n" + parsed_text + "\nTable, which was used to decode:\n";
+		foreach (var pair in decode)
+		{
+			res += pair.Key + " -> " + pair.Value + "\n";
+		}
+		res += "\n";
+		return res;
+	}
+}
+
+class Task_12 : Task
+{
+	// decode: [то, на что меняем] = то, что меняем  --- (Task_10)
+
+	// encode: [то, что меняем] = то, на что меняем  !!!
+	//  "aaa" - "x"
+	//  "bb"  - "y"
+	//  "c"   - "z"
+	// "aaa bb c" -> {"aaa", "bb", "c"} -> {"x", "y", "z"} 
+
+	private Dictionary<string, string> encode;
+	private string[] encoded_words;
+	public Task_12(string text, Dictionary<string, string> encode) : base(text)
+	{
+		this.encode = encode;
+		ParseText();
+	}
+	protected override void ParseText()
+	{
+		encoded_words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		for (int i = 0; i < encoded_words.Length; ++i)
+		{
+			if (encode.ContainsKey(encoded_words[i]))
+			{
+				encoded_words[i] = encode[encoded_words[i]];
+			}
+		}
+		parsed_text = string.Join(" ", encoded_words);
+	}
+
+	public override string ToString()
+	{
+		string res;
+		res = "Text:\n" + text + "\nEncoded text:\n" + parsed_text + "\nTable, which was used to encode:\n";
+		foreach (var pair in encode)
+		{
+			res += pair.Key + " -> " + pair.Value + "\n";
+		}
+		res += "\nResult array of encoded words = {";
+		for (int i = 0; i < encoded_words.Length; ++i)
+		{
+			res += "\"" + encoded_words[i] + "\"";
+
+			if (i != encoded_words.Length - 1) res += ", ";
+		}
+		res += "}\n";
+		return res;
+	}
+}
+
+class Task_13 : Task
+{
+	private Dictionary<char, int> rate;
+	private int total;
+
+	public Task_13(string text) : base(text)
+	{
+		rate = new Dictionary<char, int>();
+		ParseText();
+	}
+	protected override void ParseText()
+	{
+		// words[i] = i-th string
+		// words[i][j] = j-th char from i-th string 
+		// char.IsLetter('a') = true
+		// char.IsLetter('1') = false
+		var words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		total = 0;
+		for (int i = 0; i < words.Length; ++i)
+		{
+			if (char.IsLetter(words[i][0]))
+			{
+				++total;
+				if (rate.ContainsKey(words[i][0]))
+				{
+					rate[words[i][0]] += 1;
+				}
+				else
+				{
+					rate.TryAdd(words[i][0], 1);
 				}
 			}
 		}
 	}
 
-	static void Read(int n, student[] students, ref int cntBad, int subject)
+	public override string ToString()
 	{
-		for (int i = 0; i < n; i++)
+		string res = "Text:\n" + text + "\nFrequency, depends on first letter:\n";
+		foreach (var pair in rate)
 		{
-			int mark, skipped;
-			string surname;
-			Console.WriteLine($"Введите фамилию {i + 1}-го студента");
-			surname = Console.ReadLine();
-			Console.WriteLine($"Введите оценку {i + 1}-го студента");
-			mark = Convert.ToInt32(Console.ReadLine());
-			Console.WriteLine($"Введите количество занятий, пропущенных {i + 1}-м студентом");
-			skipped = Convert.ToInt32(Console.ReadLine());
-
-			if (subject == 0) students[i] = new Mstudent(surname, mark, skipped);
-			else students[i] = new Istudent(surname, mark, skipped);
-
-			if (mark == 2)
-			{
-				cntBad++;
-			}
+			res +=
+			   char.ToString(pair.Key)
+			 + " = "
+			 + $"{CountPersent(pair.Value, total)}" + "%\n";
 		}
-	}
-	static void MakeBad(ref int n, ref int cntBad, student[] BadStudents, student[] students)
-	{
-		int pos = 0;
-		for (int i = 0; i < n; i++)
-		{
-			if (students[i].Mark == 2)
-			{
-				BadStudents[pos] = students[i];
-				pos++;
-			}
-		}
-		sort(BadStudents, ref cntBad);
-	}
-	static void Main(string[] args)
-	{
-		Console.WriteLine("Введите количество студентов по математике");
-		int n = Convert.ToInt32(Console.ReadLine());
-		student[] Mstudents = new student[n];
-		int cntM = 0;
-		Read(n, Mstudents, ref cntM, 0);
-
-		Console.WriteLine("Введите количество студентов по информатике");
-		int k = Convert.ToInt32(Console.ReadLine());
-		student[] Istudents = new student[k];
-		int cntI = 0;
-		Read(k, Istudents, ref cntI, 1);
-
-		student[] badMStudents = new Mstudent[cntM];
-
-		MakeBad(ref n, ref cntM, badMStudents, Mstudents);
-
-		Console.WriteLine("Студенты математики");
-		for (int i = 0; i < cntM; i++)
-		{
-			Console.WriteLine($"{badMStudents[i].Surname}, кол-во пропущенных занятий: {badMStudents[i].Skipped}");
-		}
-
-		student[] badIStudents = new Istudent[cntI];
-
-		MakeBad(ref k, ref cntI, badIStudents, Istudents);
-
-
-		Console.WriteLine("Студенты информатики");
-		for (int i = 0; i < cntI; i++)
-		{
-			Console.WriteLine($"{badIStudents[i].Surname}, кол-во пропущенных занятий: {badIStudents[i].Skipped}");
-		}
+		return res;
 	}
 }
 
-// Number 2
-//using System;
-//abstract class Discipline
-//{
-//	public string discipline_;
-//	protected string discipline
-//	{
-//		get => discipline_;
-//		set => discipline_ = value;
-//	}
-//}
-//class LongJump : Discipline
-//{
-//	public LongJump()
-//	{
-//		discipline = "Long jump";
-//	}
-//}
-//class HighJump : Discipline
-//{
-//	public HighJump()
-//	{
-//		discipline = "High jump";
-//	}
-//}
-//struct Sportsman
-//{
+class Task_15 : Task
+{
+	private int SumOfNumbers;
+	public Task_15(string text) : base(text)
+	{
+		SumOfNumbers = 0;
+		ParseText();
+	}
+	protected override void ParseText()
+	{
+		var words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		int cur;
+		for (int i = 0; i < words.Length; ++i)
+		{
+			if (int.TryParse(words[i].Trim(new char[] { '.', ',', '!', '-', ':', ';' }), out cur))
+			{
+				SumOfNumbers += cur;
+			}
+		}
+	}
 
-//	public Sportsman(string s, Discipline d, double r1, double r2, double r3)
-//	{
-//		surname = s;
-//		TypeOfSport = d;
-//		res1 = r1;
-//		res2 = r2;
-//		res3 = r3;
-//	}
-//	public double getMax()
-//	{
-//		if (res1 >= res2 && res1 >= res3)
-//		{
-//			return res1;
-//		}
-//		else if (res2 >= res1 && res2 >= res3)
-//		{
-//			return res2;
-//		}
-//		else
-//		{
-//			return res3;
-//		}
-//	}
-//	public string getSurname()
-//	{
-//		return surname;
-//	}
-//	public double getFirst()
-//	{
-//		return res1;
-//	}
-//	public double getSecond()
-//	{
-//		return res2;
-//	}
-//	public double getThird()
-//	{
-//		return res3;
-//	}
-//	private Discipline TypeOfSport;
-//	private string surname;
-//	private double res1, res2, res3;
-//}
-//class Program
-//{
-//	static void Read(int n, Sportsman[] sportsmen, Discipline d)
-//	{
-//		Console.WriteLine($"Введите спортсменов, учавствующих в дисциплине {d}");
-//		for (int i = 0; i < n; i++)
-//		{
-//			double res1, res2, res3;
-//			string surname;
-//			Console.WriteLine($"Введите фамилию {i + 1}-го спортсмена");
-//			surname = Console.ReadLine();
-//			Console.WriteLine($"Введите первый результат {i + 1}-го спортсмена");
-//			res1 = Convert.ToDouble(Console.ReadLine());
-//			Console.WriteLine($"Введите второй результат {i + 1}-го спортсмена");
-//			res2 = Convert.ToDouble(Console.ReadLine());
-//			Console.WriteLine($"Введите третий результат {i + 1}-го спортсмена");
-//			res3 = Convert.ToDouble(Console.ReadLine());
-//			sportsmen[i] = new Sportsman(surname, d, res1, res2, res3);
-//		}
-//	}
-//	static void Print(Sportsman[] sportsmen, int n)
-//	{
-//		for (int i = 0; i < n; i++)
-//		{
-//			Console.WriteLine($"{sportsmen[i].getSurname()}, лучший результат: {sportsmen[i].getMax()} м");
-//		}
-//	}
-//	static void Main(string[] args)
-//	{
-//		Console.WriteLine("Введите количество спортсменов, учавствующих в дисциплине Long Jump");
-//		int n = Convert.ToInt32(Console.ReadLine());
-//		Sportsman[] LongJumpers = new Sportsman[n];
-//		Read(n, LongJumpers, new LongJump());
-//		Console.WriteLine("Прыжки в длину");
-//		Print(LongJumpers, n);
+	public override string ToString()
+	{
+		return "Text:\n" + text + "\n Sum of integers from text = " + SumOfNumbers.ToString() + "\n";
+	}
+}
 
-//		Console.WriteLine("Введите количество спортсменов, учавствующих в дисциплине High Jump");
-//		int k = Convert.ToInt32(Console.ReadLine());
-//		Sportsman[] HighJumpers = new Sportsman[k];
-//		Read(n, HighJumpers, new LongJump());
-//		Console.WriteLine("Прыжки в высоту");
-//		Print(HighJumpers, k);
-//	}
-//}
 
-// Number 3
-//using System;
-//abstract class Discipline
-//{
-//    public string discipline_;
-//    protected string discipline
-//    {
-//        get => discipline_;
-//        set => discipline_ = value;
-//    }
-//}
-//abstract class Gender
-//{
-//    public string gender_;
-//    protected string gender
-//    {
-//        get => gender_;
-//        set => gender_ = value;
-//    }
-//}
-//class Female : Gender
-//{
-//    public Female()
-//    {
-//        gender = "Female";
-//    }
-//}
-//class Male : Gender
-//{
-//    public Male()
-//    {
-//        gender = "Male";
-//    }
-//}
-//class Skiing : Discipline
-//{
-//    public Skiing()
-//    {
-//        discipline = "Skiing";
-//    }
-//}
-//abstract class Athlete
-//{
-//    public Athlete(string s, double r, Gender g, Discipline d)
-//    {
-//        surname = s;
-//        res = r;
-//        gender_ = g;
-//        TypeOfSport = d;
-//    }
-//    private Gender gender_;
-//    public Gender gender { get { return gender_; } }
-//    protected Discipline TypeOfSport;
-//    public Discipline TypeOfSport_ { get { return TypeOfSport; } }
-//    protected string surname;
-//    public string surname_ { get { return surname; } }
-//    protected double res;
-//    public double res_ { get { return res; } }
-//    public virtual void Print(int i)
-//    {
-//        Console.WriteLine($" {i + 1}  {surname}   {res} секунд ");
-//    }
-//}
-//class Skier : Athlete
-//{
-//    public Skier(string s, double r, Gender g)
-//    : base(s, r, g, new Skiing())
-//    { }
-//}
-//class Skier_m : Skier
-//{
-//    public Skier_m(string s, double r)
-//    : base(s, r, new Male())
-//    { }
-//    public override void Print (int i)
-//    {
+class Program
+{
+	public static void Main()
+	{
+		//Task_8 task8 = new Task_8("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий", 10);
+		//Console.WriteLine(task8);
 
-//        Console.WriteLine($" {i + 1}ый спортсмен  {surname}   {res} секунд ");
-//    }
-//}
-//class Skier_f : Skier
-//{
-//    public Skier_f(string s, double r)
-//    : base(s, r, new Female())
-//    { }
-//    public override void Print(int i)
-//    {
+		//Task_9 task9 = new Task_9("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий", 10);
+		//Console.WriteLine(task9);
+		//Task_10 task10 = new Task_10(task9.getParsedText(), task9.getDecoder());
+		//Console.Write(task10);
+		//if (task9.getText() == task10.getParsedText())
+		//{
+		//	Console.WriteLine("OK! Text was encoded and decoded successfuly:)\n\n");
+		//}
+		//else
+		//{
+		//	Console.WriteLine("OH NO! Text wasn't encoded and decoded successfuly:(\n\n");
+		//}
 
-//        Console.WriteLine($" {i + 1}ая спортсменка  {surname}   {res} секунд ");
-//    }
-//}
-//class Program
-//{
-//    static void sort(Athlete[] x, ref int len)
-//    {
-//        for (int i = 0; i < len - 1; i++)
-//        {
-//            for (int k = 0; k < len - 1 - i; k++)
-//            {
-//                if (x[k].res_ > x[k + 1].res_)
-//                {
-//                    (x[k], x[k + 1]) = (x[k + 1], x[k]);
-//                }
-//            }
-//        }
-//    }
-//    static void Read(Athlete[] x, int n, Gender g)
-//    {
-//        for (int i = 0; i < n; i++)
-//        {
-//            double res;
-//            string surname;
-//            Console.WriteLine($"Введите фамилию {i + 1}-го спортсмена");
-//            surname = Console.ReadLine();
-//            Console.WriteLine($"Введите результат {i + 1}-го спортсмена");
-//            res = Convert.ToDouble(Console.ReadLine());
-//            if (g.gender_ == "Male")
-//            {
-//                x[i] = new Skier_m(surname, res);
-//            }
-//            else
-//            {
-//                x[i] = new Skier_f(surname, res);
-//            }
-//        }
-//    }
-//    static void Print(Athlete[] gr1, int n, string TableName)
-//    {
-//        Console.WriteLine($"Таблица группы {TableName}");
-//        Console.WriteLine("----------------------------------------");
-//        Console.WriteLine("|  Место  |   Фамилия   |   Результат  |");
-//        Console.WriteLine("----------------------------------------");
-//        for (int i = 0; i < n; i++)
-//        {
-//            gr1[i].Print(i);
-//        }
-//        Console.WriteLine();
-//    }
-//    static void Merge(Athlete[] gr1, Athlete[] gr2, int n, int k, Athlete[] skiers)
-//    {
-//        int pos1 = 0;
-//        int pos2 = 0;
-//        for (int i = 0; i < n + k; i++)
-//        {
-//            if (pos1 == n)
-//            {
-//                skiers[i] = gr2[pos2];
-//                pos2++;
-//                continue;
-//            }
-//            if (pos2 == k)
-//            {
-//                skiers[i] = gr1[pos1];
-//                pos1++;
-//                continue;
-//            }
-//            if (gr1[pos1].res_ < gr2[pos2].res_)
-//            {
-//                skiers[i] = gr1[pos1];
-//                pos1++;
-//            }
-//            else
-//            {
-//                skiers[i] = gr2[pos2];
-//                pos2++;
-//            }
-//        }
-//    }
-//    static void Main(string[] args)
-//    {
-//        Console.WriteLine("Введите количество лыжниц в 1-ой группе");
-//        int n = Convert.ToInt32(Console.ReadLine());
-//        Skier_f[] f1 = new Skier_f[n];
-//        Read(f1, n, new Female());
+		//Task_12 task12 = new Task_12(task9.getParsedText(), task9.getDecoder());
+		//Console.WriteLine(task12);
 
-//        Console.WriteLine("Введите количество лыжниц в 2-ой группе");
-//        int k = Convert.ToInt32(Console.ReadLine());
-//        Skier_f[] f2 = new Skier_f[k];
-//        Read(f2, k, new Female());
 
-//        Console.WriteLine("Введите количество лыжников в 1-ой группе");
-//        int p = Convert.ToInt32(Console.ReadLine());
-//        Skier_m[] m1 = new Skier_m[p];
-//        Read(m1, p, new Male());
+		//Task_13 task13 = new Task_13("Андрей, Алена, Александр, Филип, Фрося, Ольга, Миранда");
+		//Console.WriteLine(task13);
 
-//        Console.WriteLine("Введите количество лыжников в 2-ой группе");
-//        int d = Convert.ToInt32(Console.ReadLine());
-//        Skier_m[] m2 = new Skier_m[d];
-//        Read(m2, d, new Male());
-
-//        sort(f1, ref n);
-//        sort(f2, ref k);
-//        sort(m1, ref p);
-//        sort(m2, ref d);
-
-//        Print(f1, n, "Лыжницы-1");
-//        Print(f2, k, "Лыжницы-2");
-//        Print(m1, p, "Лыжники-1");
-//        Print(m2, d, "Лыжники-2");
-
-//        Athlete[] f12 = new Athlete[n + k];
-//        Merge(f1, f2, n, k, f12);
-//        Print(f12, n + k, "Лыжницы-12");
-//        Athlete[] m12 = new Athlete[p + d];
-//        Merge(m1, m2, p, d, m12);
-//        Print(m12, p + d, "Лыжники-12");
-
-//        Athlete[] all = new Athlete[n + k + p + d];
-//        Merge(f12, m12, n + k, p + d, all);
-//        Print(all, n + k + p + d, "Лыжники+Лыжницы");
-//    }
-//}
+		Task_15 task15 = new Task_15("Today is the 23th of November and we are in 1945. We are to close to the great victory! Yesterday we got 15 gektars forward - sounds good");
+		Console.WriteLine(task15);
+	}
+}
