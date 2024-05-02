@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
+using System.Threading.Tasks;
 abstract class Task
 {
 	protected string text;
@@ -26,49 +28,75 @@ abstract class Task
 }
 class Task_8 : Task
 {
-
 	private int string_width;
-	public Task_8(string text, int stringWidth = 50) : base(text)
+	private string res;
+	public Task_8(string text) : base(text)
 	{
-		string_width = stringWidth;
 		ParseText();
 	}
 	public override string ToString()
 	{
-		return "Text:\n" + text + "\nParsed text:\n" + parsed_text;
+		return res;
 	}
 	protected override void ParseText()
 	{
-		string[] words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-		// "Andrew,", "hello,", ...
-		// parsed_text = "Andrew,\nhello"
-		int curLength = 0;
-		for (int i = 0; i < words.Length;)
+		string[] words = text.Split();
+		List<string> Str = new List<string>();
+		string num = "";
+		foreach (string word in words)
 		{
-			curLength = 0;
-			while (i < words.Length && curLength + words[i].Length <= string_width)
+			if (num.Length + word.Length > 50)
 			{
-				curLength += words[i].Length + 1;
-				parsed_text += words[i] + " ";
-				++i;
+				num = num.Remove(num.Length - 1);
+				Str.Add(num);
+				num = "";
 			}
-			while (curLength <= string_width)
-			{
-				parsed_text += " ";
-				++curLength;
-			}
-			parsed_text += "\n";
+			num += word + " ";
 		}
+		num = num.Remove(num.Length - 1);
+		Str.Add(num);
+		Str = Plus(Str);
+		foreach (string str in Str)
+		{
+			res += str + "\n"; 
+		}
+
 	}
+	public List<string> Plus(List<string> a)
+	{
+		for (int i = 0; i < a.Count; i++)
+		{
+			string[] w = a[i].Split(" ");
+			int lp = 50 - a[i].Length;
+			int p = lp / (w.Length - 1);
+			int f = lp % (w.Length - 1);
+			for (int j = 0; j < w.Length - 1; j++)
+			{
+				for (int k = 0; k < p + 1; k++)
+				{
+					w[j] += " ";
+				}
+				if (f > 0)
+				{
+					w[j] += " ";
+					f = f - 1;
+				}
+			}
+			a[i] = string.Join("", w);
+		}
+		return a;
+	}
+
 }
 class Task_9 : Task
 {
 	private Dictionary<string, int> rate;
 	private Dictionary<string, string> decode;
 	private int AmountOfWordsToEncode;
+	private char[] Codes = new char[] { '#', '@', '&', '^', '~' };
 	public Task_9(string text, int AmountOfWordsToEncode = 1) : base(text)
 	{
-		this.AmountOfWordsToEncode = AmountOfWordsToEncode;
+		this.AmountOfWordsToEncode = Math.Min(AmountOfWordsToEncode, 5);
 		rate = new Dictionary<string, int>();
 		decode = new Dictionary<string, string>();
 		parsed_text = text;
@@ -85,10 +113,6 @@ class Task_9 : Task
 		res += "\n";
 		return res;
 	}
-	// "abc abc aaaa"
-	// ab = 2, bc = 2, aa = 2
-	// 1: 0c 0c aaaa
-	// 2: 0c 0c aaaa
 
 	private void countRate()
 	{
@@ -139,8 +163,8 @@ class Task_9 : Task
 
 			if (toEncode == "") break;
 
-			decode.TryAdd(i.ToString(), toEncode);
-			parsed_text = parsed_text.Replace(toEncode, i.ToString());
+			decode.TryAdd(Codes[i].ToString(), toEncode);
+			parsed_text = parsed_text.Replace(toEncode, Codes[i].ToString());
 		}
 	}
 
@@ -312,30 +336,40 @@ class Program
 {
 	public static void Main()
 	{
-		//Task_8 task8 = new Task_8("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий", 10);
-		//Console.WriteLine(task8);
+		int number = 8;
+		Console.WriteLine($"TASK #{number++}");
+		Task_8 task8 = new Task_8("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий");
+		Console.WriteLine(task8);
 
-		//Task_9 task9 = new Task_9("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий", 10);
-		//Console.WriteLine(task9);
-		//Task_10 task10 = new Task_10(task9.getParsedText(), task9.getDecoder());
-		//Console.Write(task10);
-		//if (task9.getText() == task10.getParsedText())
-		//{
-		//	Console.WriteLine("OK! Text was encoded and decoded successfuly:)\n\n");
+		//	Console.WriteLine($"TASK #{number++}");
+		//	Task_9 task9 = new Task_9("Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот,состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий", 5);
+		//	Console.WriteLine(task9);
+
+		//	Console.WriteLine($"TASK #{number++}");
+		//	Task_10 task10 = new Task_10(task9.getParsedText(), task9.getDecoder());
+		//	Console.Write(task10);
+		//	if (task9.getText() == task10.getParsedText())
+		//	{
+		//		Console.WriteLine("OK! Text was encoded and decoded successfuly:)\n\n");
+		//	}
+		//	else
+		//	{
+		//		Console.WriteLine("OH NO! Text wasn't encoded and decoded successfuly:(\n\n");
+		//	}
+
+		//	number = 12;
+		//	Console.WriteLine($"TASK #{number++}");
+		//	Task_12 task12 = new Task_12(task9.getParsedText(), task9.getDecoder());
+		//	Console.WriteLine(task12);
+
+		//	Console.WriteLine($"TASK #{number++}");
+		//	Task_13 task13 = new Task_13("Andrew, Aloha, camrad, forest, fire, float, omerica");
+		//	Console.WriteLine(task13);
+
+		//	number = 15;
+		//	Console.WriteLine($"TASK #{number++}");
+		//	Task_15 task15 = new Task_15("Today is the 23th of November and we are in 1945. We are to close to the great victory! Yesterday we got 15 gektars forward - sounds good");
+		//	Console.WriteLine(task15);
 		//}
-		//else
-		//{
-		//	Console.WriteLine("OH NO! Text wasn't encoded and decoded successfuly:(\n\n");
-		//}
-
-		//Task_12 task12 = new Task_12(task9.getParsedText(), task9.getDecoder());
-		//Console.WriteLine(task12);
-
-
-		//Task_13 task13 = new Task_13("Андрей, Алена, Александр, Филип, Фрося, Ольга, Миранда");
-		//Console.WriteLine(task13);
-
-		Task_15 task15 = new Task_15("Today is the 23th of November and we are in 1945. We are to close to the great victory! Yesterday we got 15 gektars forward - sounds good");
-		Console.WriteLine(task15);
 	}
 }
