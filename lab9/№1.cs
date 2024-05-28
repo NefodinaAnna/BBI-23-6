@@ -89,7 +89,7 @@
 //        Participant[] peoplelist = new Participant[] { new Participant("Маша", 1, 125), new Participant("Миша", 2, 123), new Participant("Саша", 3, 12), new Participant("Вова", 4, 400), new Participant("Егор", 5, 600) };
 //        Participant.Sort(peoplelist);
 
-//        string path = @"C:\Users\ADM\Desktop";
+//        string path = @"C:\Users\Анна\Desktop\лб 9";
 //        string folder = "Files_for_task1";
 //        path = Path.Combine(path, folder);
 //        if (!Directory.Exists(path))
